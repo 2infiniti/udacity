@@ -79,15 +79,9 @@ class Blockchain {
             self.chain.push(block);
             self.height++;             
                 
-            self.validateChain().then(error => {
-                if (error.length > 0) 
-                {
-                    self.chain.pop();
-                    reject(error);
-                } else {
-                    resolve(block);
-                }
-            });                                            
+            self.validateChain().then(errors => typeof errors === 'string' ?  console.log('[SUCCESS] ', errors) : errors.forEach(error => console.log('[ERROR] ', error)));
+                 
+                                         
         });
     }
 
@@ -219,7 +213,7 @@ class Blockchain {
                         errorLog.push(`Block ${block.height} has been tempered`);
                     }
                 }
-                chainIndex++;
+                i++;
             });
             Promise.all(validatePromises).then((results) => {
                 i = 0;
@@ -230,7 +224,7 @@ class Blockchain {
                     i++;
                 });
                 resolve(errorLog);
-            });
+            }).catch(error => reject(error));;
         });
     }
 
