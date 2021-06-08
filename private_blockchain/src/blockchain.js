@@ -61,8 +61,7 @@ class Blockchain {
      * to update the `this.height`
      * Note: the symbol `_` in the method name indicates in the javascript convention 
      * that this method is a private method. 
-     */
-
+     */    
     _addBlock(block) {
         let self = this;
         return new Promise(async (resolve, reject) => {                      
@@ -77,12 +76,17 @@ class Blockchain {
             
             block.hash = SHA256(JSON.stringify(block)).toString();
             self.chain.push(block);
-            self.height++;             
-                
-            self.validateChain().then(errors => typeof errors === 'string' ?  console.log('[SUCCESS] ', errors) : errors.forEach(error => console.log('[ERROR] ', error)));
-                 
-                                         
+            self.height++;        
+           
+            try {
+                self.validateChain();
+            } catch (e) {
+                reject(e);
+            } finally {
+                resolve(block);
+            }
         });
+        
     }
 
     /**
@@ -123,7 +127,7 @@ class Blockchain {
         return new Promise(async (resolve, reject) => {
             let messageTime = parseInt(message.split(':')[1])
             let currentTime = parseInt(new Date().getTime().toString().slice(0, -3));
-            if (currentTime < (messageTime + (5 * 60 * 1000))) {
+            if (currentTime - messageTime < (5 * 60 * 1000)) {
                 let verified = bitcoinMessage.verify(message, address, signature);
                 if (verified) {
                     let block = new BlockClass.Block({ owner: address, star: star });
